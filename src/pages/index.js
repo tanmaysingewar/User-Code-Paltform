@@ -297,6 +297,7 @@ export default function HeroBullets() {
           </Group>
 
           <Group className={classes.hiddenMobile}>
+            <Button onClick={() => Router.push('/auth/createAccount')}>Sign Up</Button>
             <Button variant="default" onClick={() => Router.push('/auth/login')}>Log in</Button>
           </Group>
 
