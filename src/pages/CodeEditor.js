@@ -22,7 +22,7 @@ import {
   IconPlayerPlayFilled,
 } from "@tabler/icons-react";
 import Image from "next/image";
-import logo from "@/assets/logo.png";
+import logo from "@/assets/main_logo.png";
 import { Prism } from "@mantine/prism";
 
 //#-------------------------  Main Component  ----------------------------- //
@@ -324,9 +324,9 @@ const ProblemStatement = () => {
     >
       {/* //#------- Title ------ */}
       <div
-        style={{ margin: "0 0 5px 5px", padding: "0 0 5px 0", display: "flex" }}
+        style={{ margin: "0 0 0px 5px", padding: "0 0 5px 0", display: "flex" }}
       >
-        <Image src={logo} width={30} height={30} />
+        <Image src={logo} width={35} height={35} />
         <Text
           size={"xl"}
           style={{
