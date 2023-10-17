@@ -340,7 +340,7 @@ int main() {
         }}
       >
         <Text style={{ fontSize: "24px", fontWeight: "600" }}>
-          Attempt Provided 🥶
+          Attempt Prohibited 🥶
         </Text>
         <Text style={{ fontSize: "16px", fontWeight: "500" }}>
           Please 🤕, contact the faculty for further details
