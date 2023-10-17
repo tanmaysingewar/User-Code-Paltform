@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 // import {} from "@tabler/icons-react";
-import { Button, Text, Title, useMantineColorScheme } from "@mantine/core";
+import { Badge, Button, Group, Text, Title, useMantineColorScheme } from "@mantine/core";
 import Router from "next/router";
 
-export default function PracticalCard({ title, dec, color, show,setShow,index }) {
+export default function PracticalCard({ id, title, dec, color, show,setShow,index }) {
 
     const { colorScheme, toggleColorScheme } = useMantineColorScheme();
 
@@ -31,9 +31,10 @@ export default function PracticalCard({ title, dec, color, show,setShow,index })
           marginTop: "20px",
           display: "flex",
           backgroundColor: cardColor,
-          maxWidth: "600px",
+          width: "600px",
           borderRadius: "10px",
         }}
+        onClick={() => setShowIndex(index)}
       >
         <div
           style={{
@@ -44,10 +45,14 @@ export default function PracticalCard({ title, dec, color, show,setShow,index })
         ></div>
         <div
           style={{ margin: "15px 15px 15px 10px" }}
-          onClick={() => setShowIndex(index)}
+          
         >
-          <Title style={{ fontSize: "18px" }}>{title}</Title>
-          <Text style={{ fontSize: "12px", lineHeight: "16px" }}>{dec}</Text>
+          <Group style={{marginBottom : "5px"}}>
+          <Title style={{ fontSize: "18px" }}>{title}</Title> 
+          {/* <Badge color={"green"} style={{fontSize : "10px"}}>Completed</Badge> */}
+
+          </Group>
+          <Text style={{ fontSize: "12px", lineHeight: "16px"}}>{dec}</Text>
         </div>
       </div>
       {show === index ? (
@@ -62,7 +67,7 @@ export default function PracticalCard({ title, dec, color, show,setShow,index })
               backgroundColor: "#0368FF",
               color: "#fff",
             }}
-            onClick={() => Router.push("/CodeEditor")}
+            onClick={() => Router.push(`/CodeEditor?practical_id=${id}&lab_id=${Router.query.lab_id}`)}
           >
             Open Lab
           </Button>

@@ -11,7 +11,7 @@ export default function Header({ title,dec }) {
           <div style={{ textAlign: "center"}}>
             <Text
               size={"xs"}
-              style={{ textAlign: "left" }}
+              style={{ textAlign: "left",maxWidth : "700px" }}
             >
               {/* These Labs assign to you by the ADMIN, if changes required plz
               contact the admin */}

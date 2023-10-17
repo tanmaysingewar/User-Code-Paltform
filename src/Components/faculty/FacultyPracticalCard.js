@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 // import {} from "@tabler/icons-react";
-import { Button, Text, Title, useMantineColorScheme } from "@mantine/core";
+import { Button, Loader, Text, Title, useMantineColorScheme,Modal } from "@mantine/core";
 import Router, { useRouter } from "next/router";
+import { LoaderContext } from "./Context";
+import { deleteDate, fetchDate } from "@/helper/fetchDate";
 
 export default function FacultyPracticalCard({
   title,
@@ -14,6 +16,11 @@ export default function FacultyPracticalCard({
 }) {
   const router = useRouter();
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
+
+  const [deletePopUp, setDeletePopUp] = useState(false)
+
+
+  const [loadDeleteBUtton, setLoadDeleteBUtton] = useState(false)
 
   const setShowIndex = (index) => {
     if (show === index) {
@@ -31,57 +38,50 @@ export default function FacultyPracticalCard({
     cardColor = "#f8f9fa";
   }
 
-  const Data = [
-    {
-      _id: "CPP101",
-      title: "Problem 1",
-    },
-    {
-      _id: "CPP102",
-      title: "Problem 2",
-    },
-    {
-      _id: "CPP103",
-      title: "Problem 3",
-    },
-    {
-      _id: "CPP104",
-      title: "Problem 4",
-    },
-    {
-      _id: "CPP105",
-      title: "Problem 5",
-    },
-    {
-      _id: "CPP106",
-      title: "Problem 6",
-    },
-    {
-      _id: "CPP107",
-      title: "Problem 7",
-    },
-    {
-      _id: "CPP108",
-      title: "Problem 8",
-    },
-    {
-      _id: "CPP109",
-      title: "Problem 9",
-    },
-    {
-      _id: "CPP1010",
-      title: "Problem 10",
-    },
-  ];
+
+  const [data, setData] = useState({
+    problems: [],
+    success: false,
+  });
+
+
+
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    setLoading(true)
+    fetchDate(`/faculty/get/all/problem?practical_id=${_id}`).then((res) => {
+      console.log(res);
+      if (!res.success) return setLoading(false);
+      setData({ problems : res.response, success: true });
+      setLoading(false)
+    });
+  }, []);
+
+  const onClickDelete = () => {
+    setLoadDeleteBUtton(true)
+    deleteDate(`/faculty/delete/practical?practical_id=${_id}`).then((res) => {
+      if(!res.success) return setLoadDeleteBUtton(false);
+     router.reload()
+    })
+  }
+
+
 
   return (
     <>
+     <Modal opened={deletePopUp} onClose={() => setDeletePopUp(false)} title="Delete Lab">
+    <Text style={{marginBottom : "10px"}}>Problem : {title}</Text>
+    <Text style={{marginBottom : "10px"}}>Are you sure you want to delete this Problem?</Text>
+    <Button loading={loadDeleteBUtton} color="red" onClick={() => onClickDelete()}>Delete</Button>
+    </Modal>
       <div
+      onClick={() => setShowIndex(index)}
         style={{
           marginTop: "20px",
           display: "flex",
           backgroundColor: cardColor,
-          maxWidth: "600px",
+          width: "600px",
           borderRadius: "10px",
         }}
       >
@@ -93,14 +93,22 @@ export default function FacultyPracticalCard({
           }}
         ></div>
         <div
-          style={{ margin: "15px 15px 15px 10px" }}
-          onClick={() => setShowIndex(index)}
+          style={{ margin: "15px 15px 15px 10px",width : "95%" }}
+          
         >
           <Title style={{ fontSize: "18px" }}>{title}</Title>
           <Text style={{ fontSize: "12px", lineHeight: "16px" }}>{dec}</Text>
           <div style={{ display: "flex", marginTop: "10px" }}>
             <div>
-              {Data.map((item, index) => {
+              {/* if Array is empty show message */}
+              {
+                data.problems.length === 0 ? (
+                  <Text style={{ fontSize: "12px", lineHeight: "20px" }}>
+                   {loading ?  <Loader size="xs" variant="dots"  /> : "No Problems Found"}
+                  </Text>
+                ) : null
+              }
+              {data.problems.map((item, index) => {
                 if (index < 4) {
                   return (
                     <Problems index={index}  item={item} />
@@ -109,7 +117,7 @@ export default function FacultyPracticalCard({
               })}
             </div>
             <div style={{ marginLeft: "10px" }}>
-              {Data.map((item, index) => {
+              {data.problems.map((item, index) => {
                 if (index >= 4 && index < 8) {
                   return (
                     <Problems index={index}  item={item} />
@@ -118,7 +126,7 @@ export default function FacultyPracticalCard({
               })}
             </div>
             <div style={{ marginLeft: "10px" }}>
-              {Data.map((item, index) => {
+              {data.problems.map((item, index) => {
                 if (index >= 8 && index < 12) {
                   return (
                     <Problems index={index}  item={item} />
@@ -154,7 +162,7 @@ export default function FacultyPracticalCard({
               borderRadius: "10px",
               backgroundColor: "#CF75FF",
               color: "#fff",
-              marginLeft: "10px",
+              marginLeft: "8px",
             }}
           >
             View & Edit Material
@@ -164,15 +172,26 @@ export default function FacultyPracticalCard({
               borderRadius: "10px",
               backgroundColor: "#4CAF50",
               color: "#fff",
-              marginLeft: "10px",
+              marginLeft: "8px",
             }}
             onClick={() =>
               Router.push(
-                `/faculty/labs?lab=${router.query.lab}&create=problem`
+                `/faculty/labs?lab=${router.query.lab}&create=problem&practical=${_id}`
               )
             }
           >
             Add Problems
+          </Button>
+          <Button
+            style={{
+              borderRadius: "10px",
+              backgroundColor: "#f94449",
+              color: "#fff",
+              marginLeft: "8px",
+            }}
+            onClick={() => setDeletePopUp(true)}
+          >
+            Delete Practical
           </Button>
         </div>
       ) : null}
@@ -193,10 +212,25 @@ const Problems = ({item,index}) => {
           cursor: "pointer",
           textDecoration: "underline",
         }}
-        onClick={() => Router.push(`/faculty/labs?lab=${router.query.lab}&edit=problem&problem=${item._id}`)}
+        onClick={() => Router.push(`/faculty/labs?lab=${router.query.lab}&edit=problem&problem=${item._id}&problem_name=${item.problem_name}`)}
       >
-        {item.title}
+        {/* Practical NAme should dispay like this Practical 1 : hello Wo.... , it should not extend by 30 char */}
+
+        {/* {`Practical ${index + 1} : `}{item.problem_name} */}
+        {formatPracticalName({inputName : item.problem_name,index})}
       </Text>
     </div>
   );
 };
+
+function formatPracticalName(input) {
+  const maxStringLength = 25;
+  const { inputName, index } = input;
+  const practicalNumber = index + 1;
+  if (inputName.length <= maxStringLength - 12) {
+    return `Practical ${practicalNumber} : ${inputName}`;
+  } else {
+    const truncatedString = inputName.slice(0, maxStringLength - 15);
+    return `Practical ${practicalNumber} : ${truncatedString}...`;
+  }
+}

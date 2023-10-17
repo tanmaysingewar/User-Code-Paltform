@@ -1,9 +1,5 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 // import {} from "@tabler/icons-react";
-import facultyNavData from "@/Components/faculty/facultyNavData";
-import SideNav from "@/Components/SideNav";
-import Labs from "@/screens/students/Labs";
-import BackNav from "@/Components/BackNav";
 import Header from "@/Components/Header";
 import {
   Button,
@@ -20,9 +16,51 @@ import {
   Group,
 } from "@mantine/core";
 import { IconMailFilled, IconPhoneCall } from "@tabler/icons-react";
+import Router from "next/router";
+
+import { fetchDate } from "@/helper/fetchDate";
+import { LoaderContext } from "@/Components/faculty/Context";
+
 
 export default function StudentDetails() {
   const [openModel, setOpenModel] = useState(false);
+
+  const [loadingButton, setLoadingButton] = useState(false);
+
+  const  {visible, setVisible} = useContext(LoaderContext);
+
+  const [mainError, setMainError] = useState("");
+
+  const [searchData, setSearchData] = useState("")
+
+
+  const [studentArray, setStudentArray] = useState([])
+
+  useEffect(() => {
+    setVisible(true);
+    fetchDate("/faculty/all/student").then((res) => {
+      console.log(res);
+      if (!res.success) return setMainError(res?.error || "Something went wrong");
+      setStudentArray(res.response)
+      setVisible(false);
+    }
+    )
+  }, [])
+
+  const onSearchStudent = () => {
+    setVisible(true)
+    setLoadingButton(true);
+    setMainError("");
+    fetchDate(`/faculty/search/student?search=${searchData}`).then((res) => {
+      console.log(res);
+      if (!res.success) return setMainError(res?.error || "Something went wrong");
+      setStudentArray(res.response)
+      setLoadingButton(false);
+      setVisible(false)
+    }
+    )
+  }
+
   return (
     <>
       <Modal
@@ -54,12 +92,13 @@ export default function StudentDetails() {
                   width: "500px",
                   marginRight: "10px",
                 }}
+                onChange={(e) => setSearchData(e.target.value)}
               />
-              <Button style={{ marginRight: "20px" }}>Search</Button>
+              <Button style={{ marginRight: "20px" }} onClick={() => onSearchStudent()} loading={loadingButton}>Search</Button>
             </div>
           </div>
           <div>
-            <SingleStudentsAnalysis setOpenModel={setOpenModel} />
+            <SingleStudentsAnalysis setOpenModel={setOpenModel} studentArray={studentArray} />
           </div>
           <div
             style={{
@@ -79,7 +118,7 @@ export default function StudentDetails() {
   );
 }
 
-const SingleStudentsAnalysis = ({ setOpenModel }) => {
+const SingleStudentsAnalysis = ({ setOpenModel,studentArray }) => {
   return (
     <>
       <table
@@ -164,12 +203,34 @@ const SingleStudentsAnalysis = ({ setOpenModel }) => {
                 marginBottom: "10px",
               }}
             >
+             Semester
+            </Text>
+          </th>
+          {/* <th>
+            <Text
+              style={{
+                fontWeight: "800",
+                fontSize: "15px",
+                marginBottom: "10px",
+              }}
+            >
+             Email
+            </Text>
+          </th> */}
+          <th>
+            <Text
+              style={{
+                fontWeight: "800",
+                fontSize: "15px",
+                marginBottom: "10px",
+              }}
+            >
               More
             </Text>
           </th>
         </tr>
 
-        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item, index) => {
+        {studentArray.map((item, index) => {
           return (
             <tr
               style={{
@@ -179,26 +240,32 @@ const SingleStudentsAnalysis = ({ setOpenModel }) => {
             >
               <td style={{ padding: "10px" }}>
                 <Text style={{ fontWeight: "500", fontSize: "15px" }}>
-                  Lorem Ipsum
+                  {item.name}
                 </Text>
               </td>
               <td style={{ padding: "10px" }}>
                 <Text style={{ fontWeight: "500", fontSize: "15px" }}>
-                  22030041
+                  {item.regNo}
                 </Text>
               </td>
               <td style={{ padding: "10px" }}>
-                <Text style={{ fontWeight: "500", fontSize: "15px" }}>64</Text>
+                <Text style={{ fontWeight: "500", fontSize: "15px" }}>{item.rollNo}</Text>
               </td>
               <td style={{ padding: "10px" }}>
                 <Text style={{ fontWeight: "500", fontSize: "15px" }}>
-                  AIDS
+                  {item.branch}
                 </Text>
               </td>
-              <td style={{ padding: "10px" }}>III</td>
+              <td style={{ padding: "10px" }}>{item.currentYear}</td>
               <td style={{ padding: "10px" }}>
                 <Text style={{ fontWeight: "500", fontSize: "15px" }}>A</Text>
               </td>
+              <td style={{ padding: "10px" }}>
+                <Text style={{ fontWeight: "500", fontSize: "15px" }}>{item.currentSem}</Text>
+              </td>
+              {/* <td style={{ padding: "10px" }}>
+                <Text style={{ fontWeight: "500", fontSize: "15px" }}>{item.email}</Text>
+              </td> */}
               <td style={{ padding: "10px" }}>
                 <Button onClick={() => setOpenModel(true)}>More</Button>
               </td>

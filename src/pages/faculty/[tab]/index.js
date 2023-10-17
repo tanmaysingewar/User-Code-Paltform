@@ -5,7 +5,7 @@ import SideNav from "@/Components/SideNav";
 
 import { useRouter } from 'next/router'
 
-import { NavSelect } from "@/Components/faculty/Context";
+import { LoaderContext, NavSelect } from "@/Components/faculty/Context";
 
 import Setting from "@/screens/students/Setting";
 import Courses from "@/screens/students/Courses";
@@ -22,10 +22,25 @@ import EditProblem from "@/screens/faculty/Labs/EditProblem";
 import EditPractical from "@/screens/faculty/Labs/EditPractical";
 import LabAnalysis from "@/screens/faculty/LabAnalysis";
 
+import { LoadingOverlay } from "@mantine/core";
+
 
 export default function landingPage() {
     const router = useRouter()
     const [navIndex, setNavIndex] = useState(10);
+    const [checkToken, setCheckToken] = useState(false)
+
+    const [visible, setVisible] = useState(false);
+
+    useEffect(() => {
+      if(!localStorage.getItem("faculty_auth")){
+        router.push("/auth/facultyLogin")
+        setCheckToken(false)
+        console.log(localStorage.getItem("faculty_auth"))
+      }else{
+        setCheckToken(true)
+      }
+    }, [])
 
     useEffect(() => {
       if(router.query.tab === "labs"){
@@ -51,11 +66,17 @@ export default function landingPage() {
       }
     }, [router.query])
 
+    if(!checkToken){
+      return <></>
+    }
+
 
   return (
     <>
     <NavSelect.Provider value={{navIndex, setNavIndex}}>
+    <LoaderContext.Provider value={{visible, setVisible}}>
       <div style={{}}>
+      <LoadingOverlay visible={visible} overlayBlur={2} />
         <div style={{ display: "flex" }}>
           <div style={{ margin: "50px", marginTop: "50px" }}>
             <SideNav NavData={facultyNavData} />
@@ -82,6 +103,7 @@ export default function landingPage() {
           }
         </div>
       </div>
+      </LoaderContext.Provider>
       </NavSelect.Provider>
     </>
   );

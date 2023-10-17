@@ -1,12 +1,13 @@
-import React, { useState } from "react";
 // import {} from "@tabler/icons-react";
 import BackNav from "@/Components/BackNav";
 import Header from "@/Components/Header";
 import {Title,Text, useMantineColorScheme } from "@mantine/core";
 import PracticalCard from "@/Components/PracticalCard";
 import { useRouter } from 'next/router'
-import { ShowMore } from "@/Components/faculty/Context";
+import { LoaderContext, ShowMore } from "@/Components/faculty/Context";
+import { useContext, useEffect, useState } from "react";
 
+import { fetchDate } from "@/helper/fetchDate";
 
 export default function Practical() {
   const router = useRouter()
@@ -22,41 +23,34 @@ export default function Practical() {
       cardColor = "#f8f9fa";
   } 
 
-  const data = [
-    {
-      title: "Practical 1 : Hello World",
-      dec: "Given a string S, find the length of its longest substring that does not have any repeating characters.",
-      color: "#459949",
-    },
-    {
-      title: "Practical 2 : Variables decelerations",
-      dec: "Given a string S, find the length of its longest substring that does not have any repeating characters.",
-      color: "#ED789B",
-    },
-    {
-      title: "Practical 3 : If & Else Statement",
-      dec: "Given a string S, find the length of its longest substring that does not have any repeating characters.",
-      color: "#B468DD",
-    },
-    {
-      title: "Practical 4 : Declaring Functions",
-      dec: "Given a string S, find the length of its longest substring that does not have any repeating characters.",
-      color: "#CE6365",
-    },
-    {
-        title : "Practical 5 : Loops",
-        dec : "Given a string S, find the length of its longest substring that does not have any repeating characters.",
-        color : "#459949"
-    },
-    {
-        title : "Practical 6 : Arrays",
-        dec : "Given a string S, find the length of its longest substring that does not have any repeating characters.",
-        color : "#ED789B"
-    }
-  ];
+  // [
+  //   {
+  //     title: "Practical 1 : Hello World",
+  //     dec: "Given a string S, find the length of its longest substring that does not have any repeating characters.",
+  //     color: "#459949",
+  //   },
+  // ]
+
+  const [data, setData] = useState({
+    practicals: [],
+    success: false,
+  });
+
+  const  {visible, setVisible} = useContext(LoaderContext);
+
+  useEffect(() => {
+    setVisible(true);
+    fetchDate(`/student/all/practicals?lab_id=${router.query.lab_id}`).then((res) => {
+      console.log(res);
+      if (!res.success) return setVisible(false);
+      setVisible(false);
+      setData({ practicals : res.response, success: true });
+    });
+  }, []);
+
+
   return (
     <>
-    {/* <ShowMore.Provider value={{showMore,setShowMore}}> */}
       <div
         style={{
         padding : '20px',
@@ -71,22 +65,23 @@ export default function Practical() {
         <BackNav
           dataTrack={[
             { title: "Lab",href : "/student/labs" },
-            { title: "Practicals" ,href : `/student/labs?lab=${router.query.lab}`},
+            { title: "Practicals" ,href : `/student/labs?lab=${router.query._id}`},
           ]}
         />
         <Header
           title={`Practicals : ${router.query.lab}`}
-          dec={"Basic C++ syntax and introduction to the c++ environment."}
+          dec={`${router.query.lab_dec}`}
         />
 
         <div style={{ paddingBottom: "100px" }}>
-          {data.map((item, index) => {
+          {data.practicals.map((item, index) => {
             return (
               <div key={index} >
                 <PracticalCard
-                  title={item.title}
+                  id={item._id}
+                  title={item.name}
                   dec={item.dec}
-                  color={item.color}
+                  color={"#459949"}
                   setShow={setShow}
                   show={show}
                   index={index}
@@ -96,23 +91,6 @@ export default function Practical() {
           })}
         </div>
         </div>
-        {/* <div>
-            <div style={{ margin: "50px", marginTop: "90px",padding : "30px",backgroundColor : cardColor, width : "90%",maxWidth : '500px' ,borderRadius : '10px'}}>
-                <Title style={{ fontSize: "15px" }}>Practical 1:</Title>
-                <Title style={{ fontSize: "24px",marginTop : "10px" }}>Hello World</Title>
-                <Text style={{fontSize : "14px"}}>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</Text>
-                <Title style={{ fontSize: "18px",marginTop : "10px" }}>Problem Statement</Title>
-                <Text style={{fontSize : "14px"}}>Given a string S, find the length of its longest substring that does not have any repeating characters.</Text>
-                <Title style={{ fontSize: "18px",marginTop : "10px" }}>Function Description</Title>
-                <Text style={{fontSize : "14px"}}>Complete the function longestSubstring() which takes the string S as input and returns the length of the longest substring without any repeating characters.</Text>
-                <Title style={{ fontSize: "18px",marginTop : "10px" }}>Input Format</Title>
-                <Text style={{fontSize : "14px"}}>The only argument given is string S.</Text>
-                <Title style={{ fontSize: "18px",marginTop : "10px" }}>Output Format</Title>
-                <Text style={{fontSize : "14px"}}>Return the length of the longest substring without any repeating characters.</Text>
-                <Title style={{ fontSize: "18px",marginTop : "10px" }}>Constraints</Title>
-                <Text style={{fontSize : "14px"}}>{"1 <= length of string <= 100000"}</Text>
-            </div>
-        </div> */}
       </div>
       {/* <ShowMore /> */}
     </>

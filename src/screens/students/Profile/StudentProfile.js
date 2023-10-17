@@ -1,25 +1,79 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 // import {} from "@tabler/icons-react";
 import Header from "@/Components/Header";
-import { Button, Text } from "@mantine/core";
+import { Avatar, Button, Text } from "@mantine/core";
 import Image from "next/image";
 
 import profile from "@/assets/profile-pic.jpg";
 import Router from "next/router";
+import { useCounter } from "@mantine/hooks";
+import { LoaderContext } from "@/Components/faculty/Context";
+import { fetchDate } from "@/helper/fetchDate";
 
 export default function Profile() {
+
+
+  const  {visible, setVisible} = useContext(LoaderContext);
+
+const [values, setValues] = useState({
+  _id : "",
+  name : "",
+  email : "",
+  collage_code : "",
+  address : "",
+  dob : "",
+  gender : "",
+  contact : ["",""],
+  currentYear : "",
+  currentSem : "",
+  branch : "",
+  section : "",
+  rollNo : "",
+  regNo : ""
+
+})
+
+
+console.log(values)
+
+useEffect(() => {
+  setVisible(true);
+  fetchDate("/student/profile").then((res) => {
+    console.log(res);
+    if(res.success === false) return setVisible(false);
+    setValues({
+      _id : res.response._id,
+      name : res.response.name,
+      email : res.response.email,
+      collage_code : res.response.collage_code,
+      address : res.response.address,
+      dob : new Date(res.response.dob).toDateString(),
+      gender : res.response.gender,
+      contact : res.response.contact,
+      currentYear : res.response.currentYear,
+      currentSem : res.response.currentSem,
+      branch : res.response.branch,
+      section : res.response.section,
+      rollNo : res.response.rollNo,
+      regNo : res.response.regNo
+    })
+    setVisible(false);
+  })
+  
+}, [])
   return (
     <>
       <div style={{ marginTop: "40px", width: "100%" }}>
         <Header title="Profile" dec={"Edit the Profile here."} />
-        <ProfileCard />
-        <ProfileInfo />
+        <ProfileCard values={values} />
+        <ProfileInfo values={values} />
       </div>
     </>
   );
 }
 
-const ProfileCard = () => {
+
+const ProfileCard = ({values}) => {
   return (
     <div
       style={{
@@ -31,22 +85,19 @@ const ProfileCard = () => {
         marginTop: "30px",
       }}
     >
-      <Image
-        src={profile}
-        alt="Profile"
-        width={100}
-        height={100}
-        style={{borderRadius: "50%"}}
-      />
+      <Avatar variant="filled" radius="xl" size="xl" >
+          {/* First Letters of word and First Letter of seconde word */}
+          {values?.name?.split(" ")[0] ? values.name.split(" ")[0][0] + values?.name?.split(" ")[1][0] : ""}
+      </Avatar>
       <div style={{ margin: "auto", marginLeft: "20px" }}>
         <Text style={{ fontSize: "16px", fontWeight: "700", color: "#fff" }}>
-          Lorem Joseph Ipsum{" "}
+          {values?.name}
         </Text>
         <Text style={{ fontSize: "14px", fontWeight: "400", color: "#fff" }}>
-          S_ID : 22030041
+          S_ID : {values?.regNo}
         </Text>
         <Text style={{ fontSize: "14px", fontWeight: "400", color: "#fff" }}>
-          loremjosephipsum@gmail.com
+          {values?.email}
         </Text>
       </div>
       <Button
@@ -65,7 +116,7 @@ const ProfileCard = () => {
   );
 };
 
-const ProfileInfo = () => {
+const ProfileInfo = ({values}) => {
   return (
   <div>
     <div style={{marginTop : "30px" }}>
@@ -73,35 +124,45 @@ const ProfileInfo = () => {
        Basic Information
       </Text>
       <div style={{display : "flex"}}>
-      <Text style={{ fontSize: "14px", fontWeight: "400" }}>Date of Birth : 13/02/2003 </Text>
-      <Text style={{ fontSize: "14px", fontWeight: "400",marginLeft : "40px" }}>Gender : Male</Text>
+      <Text style={{ fontSize: "14px", fontWeight: "400" }}>Date of Birth : {values.dob} </Text>
+      <Text style={{ fontSize: "14px", fontWeight: "400",marginLeft : "40px" }}>Gender : {values.gender}</Text>
       </div>
     </div>
     <div style={{marginTop : "30px" }}>
-      <Text style={{ fontSize: "20px", fontWeight: "600"}}>
-      Admission Info
-      </Text>
-      <div style={{display : "flex"}}>
-      <Text style={{ fontSize: "14px", fontWeight: "400" }}>Admission Date : 08/11/2022</Text>
-      </div>
+      {/* currentYear : res.response.currentYear,
+      currentSem : res.response.currentSem,
+      branch : res.response.branch,
+      section : res.response.section,
+      rollNo : res.response.rollNo,
+      regNo : res.response.regNo */}
     </div>
     <div style={{marginTop : "30px" }}>
       <Text style={{ fontSize: "20px", fontWeight: "600"}}>
       Registered Info
       </Text>
+      {/* branch */}
       <div style={{display : "flex"}}>
-      <Text style={{ fontSize: "14px", fontWeight: "400" }}>Current Semester : III</Text>
-      <Text style={{ fontSize: "14px", fontWeight: "400",marginLeft : "40px" }}>Class Roll No. : 61</Text>
+      <Text style={{ fontSize: "14px", fontWeight: "400" }}>Branch : {values.branch}</Text>
       </div>
-      <Text style={{ fontSize: "14px", fontWeight: "400" }}>Current Year : II</Text>
+      
+      <div style={{display : "flex"}}>
+      <Text style={{ fontSize: "14px", fontWeight: "400" }}>Current Semester : {values.currentSem}</Text>
+      <Text style={{ fontSize: "14px", fontWeight: "400",marginLeft : "40px" }}>Class Roll No. : {values.rollNo}</Text>
+      </div>
+      <div style={{display : "flex"}}>
+      <Text style={{ fontSize: "14px", fontWeight: "400" }}>Current Year  : {values.currentYear}</Text>
+      <Text style={{ fontSize: "14px", fontWeight: "400",marginLeft : "108px" }}>Section : {values.section}</Text>
+      </div>
+
     </div>
     <div style={{marginTop : "30px" }}>
       <Text style={{ fontSize: "20px", fontWeight: "600"}}>
       Contact Info
       </Text>
       <div style={{display : "flex"}}>
-      <Text style={{ fontSize: "14px", fontWeight: "400" }}>Parents Phone Number : 8605527382</Text>
-      <Text style={{ fontSize: "14px", fontWeight: "400",marginLeft : "40px" }}>Students Phone Number : 9112954819</Text>
+      <Text style={{ fontSize: "14px", fontWeight: "400"}}>Students Phone Number : {values.contact[0]}</Text>
+      <Text style={{ fontSize: "14px", fontWeight: "400",marginLeft : "40px"  }}>Parents Phone Number : {values.contact[1]} </Text>
+
       </div>
     </div>
     <div style={{marginTop : "30px" }}>
@@ -109,7 +170,7 @@ const ProfileInfo = () => {
       Address
       </Text>
       <div style={{display : "flex"}}>
-      <Text style={{ fontSize: "14px", fontWeight: "400" }}>Block 1 new Road Sector 3 , new State</Text>
+      <Text style={{ fontSize: "14px", fontWeight: "400" }}>{values.address}</Text>
       </div>
     </div>
   </div>

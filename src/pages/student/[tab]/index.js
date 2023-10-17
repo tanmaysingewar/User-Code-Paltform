@@ -7,7 +7,7 @@ import Labs from "@/screens/students/Labs";
 import { useRouter } from 'next/router'
 
 import { createContext, useContext } from 'react';
-import { NavSelect } from "@/Components/faculty/Context";
+import { LoaderContext, NavSelect } from "@/Components/faculty/Context";
 import Profile from "@/screens/students/Profile/StudentProfile";
 import ComingSoon from "@/screens/ComingSoon";
 import studentNavData from "@/Components/user/studentNavData";
@@ -18,10 +18,13 @@ import Courses from "@/screens/students/Courses";
 import Materials from "@/screens/students/Materials";
 import Tools from "@/screens/students/Tools";
 import EditStudentsProfile from "@/screens/students/Profile/EditProfileStudents";
+import { LoadingOverlay } from "@mantine/core";
 
 export default function landingPage() {
     const router = useRouter()
     const [navIndex, setNavIndex] = useState(10);
+
+    const [visible, setVisible] = useState(false);
 
     useEffect(() => {
       if(router.query.tab === "labs"){
@@ -48,7 +51,9 @@ export default function landingPage() {
   return (
     <>
     <NavSelect.Provider value={{navIndex, setNavIndex}}>
+    <LoaderContext.Provider value={{visible, setVisible}}>
       <div style={{}}>
+      <LoadingOverlay visible={visible} overlayBlur={2} />
         <div style={{ display: "flex" }}>
           <div style={{ margin: "50px", marginTop: "50px" }}>
             <SideNav NavData={studentNavData} />
@@ -74,6 +79,7 @@ export default function landingPage() {
           
         </div>
       </div>
+      </LoaderContext.Provider>
       </NavSelect.Provider>
     </>
   );

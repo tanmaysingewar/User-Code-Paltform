@@ -5,21 +5,67 @@ import cpp from "@/assets/cpp.png"; //https://www.freepik.com/
 import python from "@/assets/python.png";
 import java from "@/assets/java.png";
 
+import { useContext, useEffect, useState } from "react";
+import { LoaderContext } from "@/Components/faculty/Context";
+import { fetchDate, postDate } from "@/helper/fetchDate";
+import { isAuthenticated } from "@/helper/auth";
 
 export default function Labs() {
-    return (
-        <>
-         <div
-            style={{height: "100vh", overflowY: "scroll"}}
-          >
-            <div style={{marginTop : "50px"}}>
+  const [data, setData] = useState({
+    labs: [],
+    success: false,
+  });
 
-            
-            <Header title={"Assigned Labs 😄"} dec={"These Labs assign to you by the ADMIN, if changes required plz contact the admin"} />
-            <Grid style={{ margin: "auto" }}>
+  const [values, setValues] = useState({
+    // branch, sem, section, year
+    section: "",
+    branch: "",
+    year: "",
+    sem: "",
+  });
+
+  const [noOfPracticals, setNoOfPracticals] = useState("NaN");
+  const [noOfStudents, setNoOfStudents] = useState("NaN");
+
+  const [deletePopUp, setDeletePopUp] = useState(false);
+
+  const [loadDeleteBUtton, setLoadDeleteBUtton] = useState(false);
+
+  const { visible, setVisible } = useContext(LoaderContext);
+
+  useEffect(() => {
+    const data = isAuthenticated().student;
+    console.log(data, "data", data.section, data.branch, data.year, data.sem);
+    setVisible(true);
+    postDate("/student/labs", {
+      section: data.section,
+      branch: data.branch,
+      year: data.year,
+      sem: data.sem,
+    }).then((res) => {
+      console.log(res);
+      if (!res.success) return setVisible(false);
+      setVisible(false);
+      setData({ labs: res.response, success: true });
+    });
+  }, []);
+
+  return (
+    <>
+      <div style={{ height: "100vh", overflowY: "scroll" }}>
+        <div style={{ marginTop: "50px" }}>
+          <Header
+            title={"Assigned Labs 😄"}
+            dec={
+              "These Labs assign to you by the ADMIN, if changes required plz contact the admin"
+            }
+          />
+          <Grid style={{ margin: "auto" }}>
+            {data.labs.map((lab) => (
               <LabCard
                 key={1}
                 logo={cpp}
+                lab={lab}
                 courseCode={"CPP203"}
                 title={"C++"}
                 dec={
@@ -30,57 +76,10 @@ export default function Labs() {
                 BG_color={"#0368FF"}
                 progress={40}
               />
-              <LabCard
-                key={2}
-                logo={python}
-                courseCode={"PY204"}
-                title={"Python"}
-                dec={
-                  "Simple and easy to learn the practicals and applied problems."
-                }
-                redirectLab={"/student/labs?lab=python"}
-                redirectTest={"/faculty/test/PY204/"}
-                BG_color={"#4CAF50"}
-                progress={70}
-              />
-              <LabCard
-                key={3}
-                logo={java}
-                courseCode={"JV232"}
-                title={"Java"}
-                dec={"Introductory course to Java with DSA practice problems "}
-                redirectLab={"/faculty/labs/JV232/labsProblemStatements"}
-                redirectTest={"/faculty/test/JV232/"}
-                BG_color={"#CF75FF"}
-                progress={20}
-              />
-              <LabCard
-                key={2}
-                logo={python}
-                courseCode={"PY204"}
-                title={"Python"}
-                dec={
-                  "Simple and easy to learn the practicals and applied problems."
-                }
-                redirectLab={"/faculty/lab/PY204/labsProblemStatements"}
-                redirectTest={"/faculty/test/PY204/"}
-                BG_color={"#4CAF50"}
-                progress={70}
-              />
-              <LabCard
-                key={3}
-                logo={java}
-                courseCode={"JV232"}
-                title={"Java"}
-                dec={"Introductory course to Java with DSA practice problems "}
-                redirectLab={"/faculty/labs/JV232/labsProblemStatements"}
-                redirectTest={"/faculty/test/JV232/"}
-                BG_color={"#CF75FF"}
-                progress={20}
-              />
-            </Grid>
-          </div>
-          </div>
-        </>
-    );
+            ))}
+          </Grid>
+        </div>
+      </div>
+    </>
+  );
 }

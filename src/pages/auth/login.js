@@ -1,3 +1,6 @@
+import { authenticate } from "@/helper/auth";
+import { postDate } from "@/helper/fetchDate";
+import { validate } from "@/helper/validate";
 import {
   TextInput,
   PasswordInput,
@@ -13,8 +16,60 @@ import {
 import Head from "next/head";
 
 import Router from "next/router";
+import { useEffect, useState } from "react";
 
-export default function AuthenticationTitle() {
+export default function FacultyAuth() {
+  const [isAuth, setIsAuth] = useState(false)
+
+  useEffect(() => {
+  if(localStorage.getItem("faculty_auth")){
+      setIsAuth(true)
+      Router.push("/faculty/labs")
+    }
+  }, [])
+  
+  const [values, setValues] = useState({
+    email: "",
+    password: "",
+  });
+
+  const [errors, setErrors] = useState({
+    email: "",
+    password: "",
+    allOk: true,
+  });
+
+  const [mainError, setMainError] = useState("");
+
+  const [loadingButton, setLoadingButton] = useState(false)
+
+  const handleChange = (name) => (event) => {
+    setErrors({ email: "", password: "", allOk: true });
+    setMainError("");
+    setValues({ ...values, [name]: event.target.value });
+  };
+
+  const handleSubmit = (e) => {
+    setLoadingButton(true)
+    let error = validate(values, setErrors);
+    if (error) return setLoadingButton(false);
+      postDate("/student/login", values).then((res) => {
+        console.log(res);
+        if (res.success === false) {
+        setLoadingButton(false)
+          setMainError(res?.message || "Email or Password is incorrect");
+        }
+        if (res.success === true) {
+          authenticate(res.response);
+          Router.push("/student/labs");
+        }
+      });
+  };
+
+  if(isAuth){
+    return <></>
+  }
+
   return (
     <>
       <Head>
@@ -29,27 +84,23 @@ export default function AuthenticationTitle() {
               fontWeight: 900,
             })}
           >
-            Welcome back!
+            Welcome back 😄
           </Title>
-          <Text color="dimmed" size="sm" align="center" mt={5}>
-            Do not have an account yet?{" "}
-            <Anchor
-              size="sm"
-              component="button"
-              style={{Color : "#0368FF"}}
-              onClick={() => Router.push("/auth/createAccount")}
-            >
-              Create account
-            </Anchor>
-          </Text>
-
           <Paper withBorder shadow="md" p={30} mt={30} radius="md">
-            <TextInput label="Email" placeholder="you@mantine.dev" required />
+            <TextInput
+              label="Email"
+              placeholder="you@mantine.dev"
+              required
+              onChange={handleChange("email")}
+              error={errors.email}
+            />
             <PasswordInput
               label="Password"
               placeholder="Your password"
               required
+              onChange={handleChange("password")}
               mt="md"
+              error={errors.password}
             />
             <Group position="apart" mt="lg">
               <Checkbox label="Remember me" />
@@ -57,11 +108,17 @@ export default function AuthenticationTitle() {
                 Forgot password?
               </Anchor>
             </Group>
+            <Text
+              style={{ fontSize: "14px", color: "#e03130", marginTop: "10px" }}
+            >
+              {mainError}
+            </Text>
             <Button
               fullWidth
               mt="xl"
-              style={{backgroundColor : "#0368FF"}}
-              onClick={() => Router.push("/student/labs")}
+              loading={loadingButton}
+              style={{ backgroundColor: "#0368FF" }}
+              onClick={() => handleSubmit()}
             >
               Sign in
             </Button>
@@ -70,7 +127,7 @@ export default function AuthenticationTitle() {
             {`Go to Faculty `}
             <Anchor
               component="button"
-              style={{Color : "#0368FF"}}
+              style={{ Color: "#0368FF" }}
               onClick={() => Router.push("/auth/facultyLogin")}
             >
               Login

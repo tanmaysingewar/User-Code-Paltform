@@ -10,6 +10,14 @@ export default function SideNav({ NavData}) {
 
   const { navIndex, setNavIndex} = useContext(NavSelect);
 
+  let logoutRout = NavData.data[0].path.includes("faculty") ? "/auth/facultyLogin" : "/auth/login";
+  let removeItem = NavData.data[0].path.includes("faculty") ? "faculty_auth" : "student_auth";
+
+  const onClickLogout = () => {
+    localStorage.removeItem(removeItem);
+    router.push(logoutRout)
+  }
+
   return (
     <>
       {NavData.data.map((item, index) => (
@@ -41,7 +49,8 @@ export default function SideNav({ NavData}) {
             marginTop: "20px",
             width: "240px",
           }}
-          onClick={() => router.push("/auth/login")}
+          
+          onClick={() => onClickLogout()}
         >
           Log Out
         </Button>
@@ -56,8 +65,6 @@ export default function SideNav({ NavData}) {
           {" "}
           Report a Bug 😤
         </Text>
-        {/* <Text size={"xs"} style={{textAlign : "center",marginTop : "30px",cursor : "pointer"}}>Created and Designed By</Text>
-                <Text size={"xs"} style={{textAlign : "center",cursor : "pointer",marginBottom : "0px"}}>Tanmay A Singewar</Text> */}
       </Box>
     </>
   );

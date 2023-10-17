@@ -1,18 +1,37 @@
-import { Card, Text, Badge, Button, Group, Box, Progress } from "@mantine/core";
+import { Card, Text, Badge, Button, Group, Box, Progress, Loader } from "@mantine/core";
 import Router from "next/router";
 import medal from "../assets/medal.png";
+// lvl2_medal
+// lvl3_medal
+import medal2 from "../assets/lvl2_medal.png";
+import medal3 from "../assets/lvl3_medal.png";
 import Image from "next/image";
+import { fetchDate } from "@/helper/fetchDate";
+import { useEffect, useState } from "react";
+
 
 export default function LabCard({
+  lab,
   logo,
-  title,
-  dec,
-  courseCode,
-  progress,
-  redirectLab,
-  redirectTest,
   BG_color,
 }) {
+  const [stats, setStats] = useState({
+    progress: 0,
+    score: 0,
+  })
+
+  const [loadingStat, setLoadingStat] = useState(false)
+  useEffect(() => {
+    setLoadingStat(true)
+    fetchDate(`/student/lab/analysis?lab_id=${lab._id}`)
+    .then((res) => {
+      if(!res.success) return setLoadingStat(false);
+      console.log(res)
+      setStats(res.response)
+      setLoadingStat(false)
+    })
+  }, [])
+  
   return (
     <Box
       style={{
@@ -31,21 +50,23 @@ export default function LabCard({
             <Text
               style={{ fontWeight: "700", color: "#fff", fontSize: "20px" }}
             >
-              {title}
+              {lab.name}
             </Text>
             <Text
               style={{ fontWeight: "400", color: "#fff", fontSize: "12px" }}
             >
-              {courseCode}
+              {lab.l_id}
             </Text>
           </div>
         </div>
         <div style={{ marginTop: "10px", width: "90%" }}>
         <Text style={{ fontWeight: "700", color: "#fff", fontSize: "15px", marginTop : "5px" }}>
-            Faculty Name : Lorem Ipsum
+            Faculty Name : {
+              lab?.faculties[0]?.name
+            }
           </Text>
           <Text style={{ fontWeight: "500", color: "#fff", fontSize: "12px" }}>
-            {dec}
+            {lab.dec}
           </Text>
           
           <Text
@@ -56,12 +77,12 @@ export default function LabCard({
               marginTop: "10px",
             }}
           >
-            Progress : {progress}%
+            Progress : {stats.progress}%
           </Text>
           <Progress
             size="xs"
             radius="xl"
-            sections={[{ value: progress, color: "#fff", label: "40%" }]}
+            sections={[{ value: stats.progress, color: "#fff", label: "40%" }]}
             style={{
               marginTop: "5px",
               backgroundColor: "rgba(255, 255, 255, 0.51)",
@@ -76,27 +97,27 @@ export default function LabCard({
               color: "#000",
             }}
             radius={"xl"}
-            onClick={() => Router.push(redirectLab)}
+            onClick={() => Router.push(`/student/labs?lab_id=${lab._id}&lab=${lab.name}&lab_dec=${lab.dec}`)}
             loading={false}
             loaderProps={{ color: "#0368FF" }}
           >
             Open Lab
           </Button>
-          {/* <Button
-            style={{
-              borderRadius: "20px",
-              backgroundColor: "#fff",
-              color: "#000",
-              marginLeft: "5px",
-            }}
-            onClick={() => Router.push(redirectTest)}
-          >
-            Take a Test
-          </Button> */}
         </div>
       </div>
-      <div style={{marginTop : 'auto',textAlign : "center",width : "30%"}}>
-        <Image src={medal} alt="Norway" height={60} style={{textAlign : 'center'}}  />
+      <div style={{margin : 'auto',textAlign : "center",width : "30%"}}>
+        {
+          loadingStat ? 
+            <Loader color="gray" variant="dots" size={"xs"} />
+          :
+          stats.score > 0 ? 
+          <Image src={
+            stats.score > 2000 ? medal3 : stats.score > 1000 ? medal2 : stats.score >= 300 ? medal : null
+          } alt="Norway" height={60} style={{textAlign : 'center'}}  />
+          :
+          ""
+        }
+        
         <Text
             style={{
               fontWeight: "500",
@@ -116,7 +137,12 @@ export default function LabCard({
               textAlign : "center",
               margin : "auto"
             }}
-          >BEGINNER</Text>
+          >{
+            loadingStat ? 
+            <Loader color="gray" variant="dots" size={"xs"} />
+          :
+            stats.score > 2000 ? "INTERMEDIATE" : stats.score > 1000 ? "ELEMENTARY" : stats.score >= 300 ? "BEGINNER" : "NO"
+          }</Text>
            <Text
             style={{
               fontWeight: "500",
@@ -144,7 +170,7 @@ export default function LabCard({
               textAlign : "center",
               margin : "auto"
             }}
-          >200 </Text>
+          >{stats.score} </Text>
           <Text
             style={{
               fontWeight: "500",
